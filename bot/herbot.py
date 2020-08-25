@@ -12,7 +12,7 @@ class Herbot(discord.Client):
         
 
     async def on_ready(self):
-        print("Moin Leute, Trymacs hier!")
+        print("[HERBOT] started.")
 
     async def on_message(self, message):
         if message.author == self.user:
