@@ -1,2 +1,2 @@
 # 5Head Discord Bot
-A private Discord Bot for my Server :sunglasses:
+A Private Discord Bot For My Server :sunglasses:
