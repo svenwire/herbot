@@ -19,6 +19,7 @@ class Herbot(discord.Client):
     async def on_message(self, message):
         if not self.__db.is_connected():
             self.__db.reconnect()
+            self.__cursor.execute("USE herbot")
 
         if message.author == self.user:
             return
