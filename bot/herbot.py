@@ -34,8 +34,8 @@ class Herbot(discord.Client):
         # check for text command and get it's message if exists
         self.__cursor.execute(f"SELECT * FROM commands WHERE command ='{command}'")
         result = self.__cursor.fetchall()
-        if result and result[0][1] == command:
-            await message.channel.send(result[0][2])
+        if result and result[0][0] == command:
+            await message.channel.send(result[0][1])
 
         # check for other commands
         if len(args) == 1:
