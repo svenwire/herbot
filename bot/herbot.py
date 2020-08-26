@@ -84,6 +84,21 @@ class Herbot(discord.Client):
                 embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm")
                 embed.add_field(name="Highscore", value=f"{highscore}cm", inline=False)
                 await message.channel.send(embed=embed)
+            elif command == "!bestenliste":
+                ranks = ""
+                users = ""
+                laengen = ""
+                bl = self.__get_bestenliste()
+                for i in range(len(bl)):
+                    ranks += f"#{i+1}\n"
+                    users += f"{bl[i][0]}\n"
+                    laengen += f"{bl[i][4]}cm\n"
+                
+                embed = discord.Embed(title=f"Bestenliste (Top 10)")
+                embed.add_field(name="Rank", value=ranks)
+                embed.add_field(name="User", value=users)
+                embed.add_field(name="Länge", value=laengen)
+                await message.channel.send(embed=embed)
         elif len(args) == 2:
             if command == "!delcom":
                 if self.__is_text_command(args[1]):
@@ -134,6 +149,14 @@ class Herbot(discord.Client):
             return True
         else:
             return False
+
+    def __get_bestenliste(self):
+        self.__cursor.execute("SELECT * FROM users ORDER BY highscore DESC")
+        result = self.__cursor.fetchall()
+        for x in result:
+            if x[4] == None:
+                result.remove(x)
+        return result[:10]
 
     def __get_user_value(self, display_name, column):
         self.__cursor.execute(f"SELECT {column} FROM users WHERE display_name = '{display_name}'")
