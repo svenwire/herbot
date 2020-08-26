@@ -46,7 +46,7 @@ class Herbot(discord.Client):
                     self.__db.commit()
                     self.__process_highscore(message.author.display_name)
                 else:
-                    laenge = self.__get_schwanz(message.author.display_name, "schwanz")
+                    laenge = self.__get_user_value(message.author.display_name, "schwanz")
                     await message.channel.send(f"{message.author.display_name} hatte heute einen {laenge}cm Schwanz.")
             elif command == "!yarak":
                 if not self.__already_typed_schwanz(message.author.display_name, "yarak"):
@@ -56,7 +56,7 @@ class Herbot(discord.Client):
                     self.__db.commit()
                     self.__process_highscore(message.author.display_name)
                 else:
-                    laenge = self.__get_schwanz(message.author.display_name, "yarak")
+                    laenge = self.__get_user_value(message.author.display_name, "yarak")
                     await message.channel.send(f"{message.author.display_name} hatte heute einen {laenge}cm Yarak.")
             elif command == "!subschwanz":
                 if not self.__already_typed_schwanz(message.author.display_name, "subschwanz"):
@@ -66,8 +66,24 @@ class Herbot(discord.Client):
                     self.__db.commit()
                     self.__process_highscore(message.author.display_name)
                 else:
-                    laenge = self.__get_schwanz(message.author.display_name, "subschwanz")
+                    laenge = self.__get_user_value(message.author.display_name, "subschwanz")
                     await message.channel.send(f"{message.author.display_name} hatte heute einen {laenge}cm Subschwanz.")
+            elif command == "!schwanzinfo":
+                embed = discord.Embed(title=f"{message.author.display_name} Schwanzinfo")
+                embed.add_field(name="Typ", value="Schwanz\nYarak\nSubschwanz\nInsgesamt")
+                schwaenze = [self.__get_user_value(message.author.display_name, "schwanz"), self.__get_user_value(message.author.display_name, "yarak"), self.__get_user_value(message.author.display_name, "subschwanz")]
+                insgesamt = 0
+                for i in range(len(schwaenze)):
+                    if schwaenze[i] == None:
+                        schwaenze[i] == "- "
+                    else:
+                        insgesamt += schwaenze[i]
+                highscore = self.__get_user_value(message.author.display_name, "highscore")
+                if highscore == None: highscore = "- "
+                
+                embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm")
+                embed.add_field(name="Highscore", value=f"{highscore}cm", inline=False)
+                await message.channel.send(embed=embed)
         elif len(args) == 2:
             if command == "!delcom":
                 if self.__is_text_command(args[1]):
@@ -119,8 +135,8 @@ class Herbot(discord.Client):
         else:
             return False
 
-    def __get_schwanz(self, display_name, schwanz_type):
-        self.__cursor.execute(f"SELECT {schwanz_type} FROM users WHERE display_name = '{display_name}'")
+    def __get_user_value(self, display_name, column):
+        self.__cursor.execute(f"SELECT {column} FROM users WHERE display_name = '{display_name}'")
         result = self.__cursor.fetchone()
         return result[0]
 
