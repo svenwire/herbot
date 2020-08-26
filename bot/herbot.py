@@ -165,7 +165,7 @@ class Herbot(discord.Client):
 
     def __user_exists(self, display_name):
         self.__cursor.execute(f"SELECT * FROM users WHERE display_name = '{display_name}'")
-        result = self.__cursor.fetchall()
+        result = self.__cursor.fetchone()
         if result: return True
         else: return False
 
