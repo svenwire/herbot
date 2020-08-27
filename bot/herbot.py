@@ -140,6 +140,7 @@ class Herbot(discord.Client):
             next_date = datetime.strptime(result[0][1], '%Y-%m-%d').date()
             if datetime.today().date() > next_date:
                 self.__cursor.execute("UPDATE users SET schwanz = NULL, yarak = NULL, subschwanz = NULL")
+                self.__cursor.execute(f"UPDATE settings SET next_date = '{datetime.today().date()}'")
                 self.__db.commit()
         else:
             next_date = str(datetime.today().date())
