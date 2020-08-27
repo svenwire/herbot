@@ -142,7 +142,7 @@ class Herbot(discord.Client):
                 self.__cursor.execute("UPDATE users SET schwanz = NULL, yarak = NULL, subschwanz = NULL")
                 self.__db.commit()
         else:
-            next_date = str(datetime.today().date().replace(day=datetime.today().day+1))
+            next_date = str(datetime.today().date())
             self.__cursor.execute("INSERT INTO settings (name, val) VALUES (%s, %s)", ("next_date", next_date))
             self.__db.commit()
 
