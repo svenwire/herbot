@@ -82,17 +82,25 @@ class Herbot(discord.Client):
                         schwaenze[i] == "- "
                     else:
                         insgesamt += schwaenze[i]
+                bl = self.__get_bestenliste()
+                highscore = None
+                rank = None
+                for i in range(len(bl)):
+                    if bl[i][0] == message.author.display_name:
+                        highscore = bl[i][4]
+                        rank = i+1
                 highscore = self.__get_user_value(message.author.display_name, "highscore")
                 if highscore == None: highscore = "- "
+                if rank == None: rank = "-"
                 
                 embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm")
-                embed.add_field(name="Highscore", value=f"{highscore}cm", inline=False)
+                embed.add_field(name="Highscore", value=f"{highscore}cm (#{rank})", inline=False)
                 await message.channel.send(embed=embed)
             elif command == "!bestenliste":
                 ranks = ""
                 users = ""
                 laengen = ""
-                bl = self.__get_bestenliste()
+                bl = self.__get_bestenliste()[:10]
                 for i in range(len(bl)):
                     ranks += f"#{i+1}\n"
                     users += f"{bl[i][0]}\n"
@@ -161,7 +169,7 @@ class Herbot(discord.Client):
         for x in result:
             if x[4] == None:
                 result.remove(x)
-        return result[:10]
+        return result
 
     def __get_user_value(self, display_name, column):
         self.__cursor.execute(f"SELECT {column} FROM users WHERE display_name = '{display_name}'")
