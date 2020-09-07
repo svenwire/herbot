@@ -15,7 +15,7 @@ class Herbot(discord.Client):
         
 
     async def on_ready(self):
-        print("[HERBOT] started.")
+        print("[HERBOT] ist am start yo.")
 
     async def on_message(self, message):
         if not self.__db.is_connected():
