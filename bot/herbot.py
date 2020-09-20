@@ -24,6 +24,14 @@ class Herbot(discord.Client):
         if message.author == self.user:
             return
 
+        role_minimum = 6
+        highest_role = 0
+        for role in message.author.roles:
+            if highest_role < role.position:
+                highest_role = role.position
+        
+        if highest_role < role_minimum: return
+
         # create user if not exist
         if not self.__user_exists(message.author.display_name):
             self.__cursor.execute(f"INSERT INTO users (display_name) VALUES ('{message.author.display_name}')")
