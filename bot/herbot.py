@@ -4,6 +4,7 @@ import datetime
 import mysql.connector
 from datetime import datetime
 from random import randint
+import shlex
 
 class Herbot(discord.Client):
     
@@ -14,7 +15,7 @@ class Herbot(discord.Client):
         
 
     async def on_ready(self):
-        print("[HERBOT] started.")
+        print("[HERBOT] ist am start yo.")
 
     async def on_message(self, message):
         if not self.__db.is_connected():
@@ -37,8 +38,10 @@ class Herbot(discord.Client):
             self.__cursor.execute(f"INSERT INTO users (display_name) VALUES ('{message.author.display_name}')")
             self.__db.commit()
         
-        args = message.content.split(" ", 2)
-        command = args[0].lower()
+        msg = shlex.split(message.content)
+        command = msg[0]
+        args = msg[1:]
+        display_name = message.author.display_name
 
         # check for text command and get it's message if exists
         self.__cursor.execute(f"SELECT * FROM commands WHERE command ='{command}'")
@@ -47,64 +50,53 @@ class Herbot(discord.Client):
             await message.channel.send(result[0][1])
 
         # check for other commands
-        if len(args) == 1:
-            self.__check_next_date()
+        self.__check_next_date()
 
-            if command == "!schwanz":
-                if not self.__already_typed_schwanz(message.author.display_name, "schwanz"):
+        if command == "!schwanz":
+            if len(args) == 0:
+                if not self.__already_typed_schwanz(display_name, "schwanz"):
                     laenge = randint(0, 100)
-                    await message.channel.send(f"{message.author.display_name} hat einen {laenge}cm Schwanz.")
-                    self.__cursor.execute(f"UPDATE users SET schwanz = {laenge} WHERE display_name = '{message.author.display_name}'")
+                    await message.channel.send(f"{display_name} hat einen {laenge}cm Schwanz.")
+                    self.__cursor.execute(f"UPDATE users SET schwanz = {laenge} WHERE display_name = '{display_name}'")
                     self.__db.commit()
-                    self.__process_highscore(message.author.display_name)
+                    self.__process_highscore(display_name)
                 else:
-                    laenge = self.__get_user_value(message.author.display_name, "schwanz")
-                    await message.channel.send(f"{message.author.display_name} hatte heute einen {laenge}cm Schwanz.")
-            elif command == "!yarak":
-                if not self.__already_typed_schwanz(message.author.display_name, "yarak"):
+                    laenge = self.__get_user_value(display_name, "schwanz")
+                    await message.channel.send(f"{display_name} hatte heute einen {laenge}cm Schwanz.")
+        elif command == "!yarak":
+            if len(args) == 0:
+                if not self.__already_typed_schwanz(display_name, "yarak"):
                     laenge = randint(0, 100)
-                    await message.channel.send(f"{message.author.display_name} hat einen {laenge}cm Yarak.")
-                    self.__cursor.execute(f"UPDATE users SET yarak = {laenge} WHERE display_name = '{message.author.display_name}'")
+                    await message.channel.send(f"{display_name} hat einen {laenge}cm Yarak.")
+                    self.__cursor.execute(f"UPDATE users SET yarak = {laenge} WHERE display_name = '{display_name}'")
                     self.__db.commit()
-                    self.__process_highscore(message.author.display_name)
+                    self.__process_highscore(display_name)
                 else:
-                    laenge = self.__get_user_value(message.author.display_name, "yarak")
-                    await message.channel.send(f"{message.author.display_name} hatte heute einen {laenge}cm Yarak.")
-            elif command == "!subschwanz":
-                if not self.__already_typed_schwanz(message.author.display_name, "subschwanz"):
+                    laenge = self.__get_user_value(display_name, "yarak")
+                    await message.channel.send(f"{display_name} hatte heute einen {laenge}cm Yarak.")
+        elif command == "!subschwanz":
+            if len(args) == 0:
+                if not self.__already_typed_schwanz(display_name, "subschwanz"):
                     laenge = randint(0, 200)
-                    await message.channel.send(f"{message.author.display_name} hat einen {laenge}cm Subschwanz.")
-                    self.__cursor.execute(f"UPDATE users SET subschwanz = {laenge} WHERE display_name = '{message.author.display_name}'")
+                    await message.channel.send(f"{display_name} hat einen {laenge}cm Subschwanz.")
+                    self.__cursor.execute(f"UPDATE users SET subschwanz = {laenge} WHERE display_name = '{display_name}'")
                     self.__db.commit()
-                    self.__process_highscore(message.author.display_name)
+                    self.__process_highscore(display_name)
                 else:
-                    laenge = self.__get_user_value(message.author.display_name, "subschwanz")
-                    await message.channel.send(f"{message.author.display_name} hatte heute einen {laenge}cm Subschwanz.")
-            elif command == "!schwanzinfo":
-                embed = discord.Embed(title=f"{message.author.display_name} Schwanzinfo")
-                embed.add_field(name="Typ", value="Schwanz\nYarak\nSubschwanz\nInsgesamt")
-                schwaenze = [self.__get_user_value(message.author.display_name, "schwanz"), self.__get_user_value(message.author.display_name, "yarak"), self.__get_user_value(message.author.display_name, "subschwanz")]
-                insgesamt = 0
-                for i in range(len(schwaenze)):
-                    if schwaenze[i] == None:
-                        schwaenze[i] == "- "
-                    else:
-                        insgesamt += schwaenze[i]
-                bl = self.__get_bestenliste()
-                highscore = None
-                rank = None
-                for i in range(len(bl)):
-                    if bl[i][0] == message.author.display_name:
-                        highscore = bl[i][4]
-                        rank = i+1
-                highscore = self.__get_user_value(message.author.display_name, "highscore")
-                if highscore == None: highscore = "- "
-                if rank == None: rank = "-"
-                
-                embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm")
-                embed.add_field(name="Highscore", value=f"{highscore}cm (#{rank})", inline=False)
+                    laenge = self.__get_user_value(display_name, "subschwanz")
+                    await message.channel.send(f"{display_name} hatte heute einen {laenge}cm Subschwanz.")
+        elif command == "!schwanzinfo":
+            if len(args) == 0:
+                embed = self.__get_schwanzinfo_embed(display_name)
                 await message.channel.send(embed=embed)
-            elif command == "!bestenliste":
+            elif len(args) == 1:
+                if self.__user_exists(args[0]):
+                    embed = self.__get_schwanzinfo_embed(args[0])
+                    await message.channel.send(embed=embed)
+                else:
+                    await message.channel.send(f"Es gibt den User \"{args[0]}\" nicht.")
+        elif command == "!bestenliste":
+            if len(args) == 0:
                 ranks = ""
                 users = ""
                 laengen = ""
@@ -119,29 +111,55 @@ class Herbot(discord.Client):
                 embed.add_field(name="User", value=users)
                 embed.add_field(name="Länge", value=laengen)
                 await message.channel.send(embed=embed)
-        elif len(args) == 2:
-            if command == "!delcom":
-                if self.__is_text_command(args[1]):
-                    self.__cursor.execute(f"DELETE FROM commands WHERE command = '{args[1]}'")
+        elif command == "!addcom":
+            if len(args) == 2:
+                if not self.__is_text_command(args[0]):
+                    self.__cursor.execute("INSERT INTO commands (command, text) VALUES (%s, %s)", (args[0], args[1]))
                     self.__db.commit()
-                    await message.channel.send(f"Der Command \"{args[1]}\" wurde gelöscht.")
+                    await message.channel.send(f"Der Command \"{args[0]}\" wurde hinzugefügt.")
                 else:
-                    await message.channel.send(f"Den Command \"{args[1]}\" gibt es nicht.")
-        elif len(args) == 3:
-            if command == "!addcom":
-                if not self.__is_text_command(args[1]):
-                    self.__cursor.execute("INSERT INTO commands (command, text) VALUES (%s, %s)", (args[1], args[2]))
+                    await message.channel.send(f"Den Command \"{args[0]}\" gibt es schon.")
+        elif command == "!delcom":
+            if len(args) == 1:
+                if self.__is_text_command(args[0]):
+                    self.__cursor.execute(f"DELETE FROM commands WHERE command = '{args[0]}'")
                     self.__db.commit()
-                    await message.channel.send(f"Der Command \"{args[1]}\" wurde hinzugefügt.")
+                    await message.channel.send(f"Der Command \"{args[0]}\" wurde gelöscht.")
                 else:
-                    await message.channel.send(f"Den Command \"{args[1]}\" gibt es schon.")
-            elif command == "!editcom":
-                if self.__is_text_command(args[1]):
-                    self.__cursor.execute(f"UPDATE commands SET text = '{args[2]}' WHERE command = '{args[1]}'")
+                    await message.channel.send(f"Den Command \"{args[0]}\" gibt es nicht.")
+        elif command == "!editcom":
+            if len(args) == 2:
+                if self.__is_text_command(args[0]):
+                    self.__cursor.execute(f"UPDATE commands SET text = '{args[1]}' WHERE command = '{args[0]}'")
                     self.__db.commit()
-                    await message.channel.send(f"Der Command \"{args[1]}\" wurde bearbeitet.")
+                    await message.channel.send(f"Der Command \"{args[0]}\" wurde bearbeitet.")
                 else:
-                    await message.channel.send(f"Den Command \"{args[1]}\" gibt es nicht.")
+                    await message.channel.send(f"Den Command \"{args[0]}\" gibt es nicht.")
+
+    def __get_schwanzinfo_embed(self, display_name):
+        embed = discord.Embed(title=f"{display_name} Schwanzinfo")
+        embed.add_field(name="Typ", value="Schwanz\nYarak\nSubschwanz\nInsgesamt")
+        schwaenze = [self.__get_user_value(display_name, "schwanz"), self.__get_user_value(display_name, "yarak"), self.__get_user_value(display_name, "subschwanz")]
+        insgesamt = 0
+        for i in range(len(schwaenze)):
+            if schwaenze[i] == None:
+                schwaenze[i] == "- "
+            else:
+                insgesamt += schwaenze[i]
+        bl = self.__get_bestenliste()
+        highscore = None
+        rank = None
+        for i in range(len(bl)):
+            if bl[i][0] == display_name:
+                highscore = bl[i][4]
+                rank = i+1
+        highscore = self.__get_user_value(display_name, "highscore")
+        if highscore == None: highscore = "- "
+        if rank == None: rank = "-"
+        
+        embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm")
+        embed.add_field(name="Highscore", value=f"{highscore}cm (#{rank})", inline=False)
+        return embed
 
     def __is_text_command(self, command):
         self.__cursor.execute(f"SELECT * FROM commands WHERE command ='{command}'")
