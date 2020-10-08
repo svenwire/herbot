@@ -10,7 +10,7 @@ class SQL():
 
     def __create_tables(self):
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS commands (command VARCHAR(32) PRIMARY KEY, text VARCHAR(1024))")
-        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (display_name VARCHAR(64) PRIMARY KEY, schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL)")
+        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (display_name VARCHAR(64) PRIMARY KEY, schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0)")
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS settings (name VARCHAR(32) PRIMARY KEY, val VARCHAR(512))")
 
     def reconnect(self):
@@ -64,7 +64,6 @@ class SQL():
 
     def process_highscore(self, display_name):
         result = self.query("SELECT schwanz, yarak, subschwanz, highscore FROM users WHERE display_name = %s", (display_name,))
-        print(result)
         highscore = result[0][3]
         if None not in result[0][0:3]:
             schwanz_summe = sum(result[0][0:3])
@@ -88,3 +87,9 @@ class SQL():
 
     def edit_text_command(self, command, text):
         self.update_value_where("commands", "text", text, ("command", command))
+
+    def get_online_time(self, display_name):
+        return self.get_value_where("online_time", "users", ("display_name", display_name))
+
+    def add_online_time(self, display_name, minutes):
+        self.execute("UPDATE users SET online_time = online_time + %s WHERE display_name = %s", (minutes, display_name))

@@ -1,7 +1,9 @@
 import discord
+from discord.ext import tasks
 import os
 import datetime
 from datetime import datetime
+from datetime import timedelta
 from random import randint
 import shlex
 from .sql import SQL
@@ -9,11 +11,11 @@ from .sql import SQL
 class Herbot(discord.Client):
     
     def __init__(self):
-        super().__init__()
+        super().__init__(intents=discord.Intents.all())
         self.__sql = SQL(os.getenv("MYSQL_HOST"), os.getenv("MYSQL_USER"), os.getenv("MYSQL_PASSWORD"), os.getenv("MYSQL_DATABASE"))
         
-
     async def on_ready(self):
+        self.count_time.start()
         print("[HERBOT] ist am start yo.")
 
     async def on_message(self, message):
@@ -32,6 +34,7 @@ class Herbot(discord.Client):
         if highest_role < role_minimum: return
 
         display_name = message.author.display_name
+        color = discord.Color.gold()
 
         # create user if not exist
         if not self.__sql.user_exists(display_name):
@@ -79,13 +82,13 @@ class Herbot(discord.Client):
                 else:
                     laenge = self.__sql.get_schwanz_laenge(display_name, "subschwanz")
                     await message.channel.send(f"{display_name} hatte heute einen {laenge}cm Subschwanz.")
-        elif command == "!schwanzinfo":
+        elif command == "!stats":
             if len(args) == 0:
-                embed = self.__get_schwanzinfo_embed(display_name)
+                embed = self.__get_stats_embed(display_name, color)
                 await message.channel.send(embed=embed)
             elif len(args) == 1:
                 if self.__sql.user_exists(args[0]):
-                    embed = self.__get_schwanzinfo_embed(args[0])
+                    embed = self.__get_stats_embed(args[0], color)
                     await message.channel.send(embed=embed)
                 else:
                     await message.channel.send(f"Es gibt den User \"{args[0]}\" nicht.")
@@ -100,7 +103,7 @@ class Herbot(discord.Client):
                     users += f"{bl[i][0]}\n"
                     laengen += f"{bl[i][1]}cm\n"
                 
-                embed = discord.Embed(title=f"Bestenliste (Top 10)")
+                embed = discord.Embed(title=f"Bestenliste (Top 10)", color=color)
                 embed.add_field(name="Rank", value=ranks)
                 embed.add_field(name="User", value=users)
                 embed.add_field(name="Länge", value=laengen)
@@ -127,8 +130,8 @@ class Herbot(discord.Client):
                 else:
                     await message.channel.send(f"Den Command \"{args[0]}\" gibt es nicht.")
 
-    def __get_schwanzinfo_embed(self, display_name):
-        embed = discord.Embed(title=f"{display_name} Schwanzinfo")
+    def __get_stats_embed(self, display_name, color):
+        embed = discord.Embed(title=f"{display_name} Stats", color=color)
         embed.add_field(name="Typ", value="Schwanz\nYarak\nSubschwanz\nInsgesamt")
         schwaenze = [
             self.__sql.get_schwanz_laenge(display_name, "schwanz"),
@@ -137,10 +140,9 @@ class Herbot(discord.Client):
         ]
         insgesamt = 0
         for n, i in enumerate(schwaenze):
-            if i == None:
-                schwaenze[n] == "- "
-            else:
+            if i != None:
                 insgesamt += schwaenze[n]
+
         bl = self.__sql.get_ordered_highscores()
         highscore = None
         rank = None
@@ -152,6 +154,17 @@ class Herbot(discord.Client):
         if highscore == None: highscore = "- "
         if rank == None: rank = "-"
         
-        embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm")
+        embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm".replace("None", "- "))
         embed.add_field(name="Highscore", value=f"{highscore}cm (#{rank})", inline=False)
+        
+        online_time_minutes = self.__sql.get_online_time(display_name)
+        online_time = "{:.2f}".format(online_time_minutes / 60)
+        embed.add_field(name="Online Zeit", value=f"{online_time} Stunden", inline=False)
         return embed
+
+    @tasks.loop(seconds=60)
+    async def count_time(self):
+        for member in self.get_guild(408639338910449664).get_channel(505060092811411493).members:
+            if member.voice:
+                self.__sql.add_online_time(member.display_name, 1)
+        
