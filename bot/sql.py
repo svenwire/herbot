@@ -45,8 +45,8 @@ class SQL():
  
     def schwanz_on_cooldown(self, display_name, schwanz_type):
         result = self.query("SELECT {} from users WHERE display_name = %s".format(schwanz_type), (display_name,))
-        if result == None: return True
-        else: return False
+        if result == None: return False
+        else: return True
 
     def get_ordered_highscores(self):
         return self.query("SELECT display_name, highscore from users WHERE highscore IS NOT NULL ORDER BY highscore DESC", ())

@@ -1,9 +1,6 @@
 import discord
 from discord.ext import tasks
 import os
-import datetime
-from datetime import datetime
-from datetime import timedelta
 from random import randint
 import shlex
 from .sql import SQL
