@@ -159,7 +159,7 @@ class Herbot(discord.Client):
         
         online_time_minutes = self.__sql.get_online_time(display_name)
         online_time = "{:.2f}".format(online_time_minutes / 60)
-        embed.add_field(name="Online Zeit", value=f"{online_time} Stunden", inline=False)
+        embed.add_field(name="Online Zeit (Voice)", value=f"{online_time} Stunden", inline=False)
         return embed
 
     @tasks.loop(seconds=60)
