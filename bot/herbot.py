@@ -162,6 +162,7 @@ class Herbot(discord.Client):
     @tasks.loop(seconds=60)
     async def count_time(self):
         for member in self.get_guild(408639338910449664).get_channel(505060092811411493).members:
-            if member.voice and member.voice.id != 408730091682791425:
+            if member.voice and member.voice.channel.id != 408730091682791425:
+                print(member.display_name)
                 self.__sql.add_online_time(member.display_name, 1)
         
