@@ -38,7 +38,7 @@ class Herbot(discord.Client):
             self.__sql.add_user(display_name)
         
         msg = shlex.split(message.content)
-        command = msg[0]
+        command = msg[0].lower()
         args = msg[1:]
 
         # check for text command and get it's message if exists
