@@ -89,6 +89,9 @@ class Herbot(discord.Client):
                     await message.channel.send(embed=embed)
                 else:
                     await message.channel.send(f"Es gibt den User \"{args[0]}\" nicht.")
+        elif command == "!187":
+            count = self.__sql.get_value_where("187_count", "users", ("display_name", display_name))
+            await message.channel.send(f"{display_name} hat {count} mal 187 gehabt. :one: :eight: :seven:")
         elif command == "!bestenliste":
             if len(args) == 0:
                 ranks = ""
@@ -148,8 +151,8 @@ class Herbot(discord.Client):
                 highscore = bl[i][1]
                 rank = i+1
         highscore = self.__sql.get_value_where("highscore", "users", ("display_name", display_name))
-        if highscore == None: highscore = "- "
-        if rank == None: rank = "-"
+        if highscore is None: highscore = "- "
+        if rank is None: rank = "-"
         
         embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm".replace("None", "- "))
         embed.add_field(name="Highscore", value=f"{highscore}cm (#{rank})", inline=False)

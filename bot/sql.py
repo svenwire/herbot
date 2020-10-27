@@ -10,7 +10,7 @@ class SQL():
 
     def __create_tables(self):
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS commands (command VARCHAR(32) PRIMARY KEY, text VARCHAR(1024))")
-        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (display_name VARCHAR(64) PRIMARY KEY, schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0)")
+        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (display_name VARCHAR(64) PRIMARY KEY, schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0, 187_count INT DEFAULT 0 NOT NULL)")
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS settings (name VARCHAR(32) PRIMARY KEY, val VARCHAR(512))")
 
     def reconnect(self):
@@ -69,6 +69,8 @@ class SQL():
             schwanz_summe = sum(result[0][0:3])
             if highscore is None or highscore < schwanz_summe:
                 self.execute("UPDATE users SET highscore = %s WHERE display_name = %s", (schwanz_summe, display_name))
+                if schwanz_summe == 187:
+                    self.execute("UPDATE users SET 187_count = 187_count + %s WHERE display_name = %s", (1, display_name))
 
     def add_user(self, display_name):
         self.execute("INSERT INTO users (display_name) VALUES (%s)", (display_name,))
