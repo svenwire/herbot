@@ -69,8 +69,8 @@ class SQL():
             schwanz_summe = sum(result[0][0:3])
             if highscore is None or highscore < schwanz_summe:
                 self.execute("UPDATE users SET highscore = %s WHERE display_name = %s", (schwanz_summe, display_name))
-                if schwanz_summe == 187:
-                    self.execute("UPDATE users SET 187_count = 187_count + %s WHERE display_name = %s", (1, display_name))
+            if schwanz_summe == 187:
+                self.execute("UPDATE users SET 187_count = 187_count + %s WHERE display_name = %s", (1, display_name))
 
     def add_user(self, display_name):
         self.execute("INSERT INTO users (display_name) VALUES (%s)", (display_name,))
