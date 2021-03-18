@@ -154,8 +154,8 @@ class Herbot(discord.Client):
         for i in range(start, end):
             command = commands[i]
             all_commands_string += command[0] + "\n"
-            if len(command[1]) > 60:
-                all_texts_string += command[1][:60] + "...\n"
+            if len(command[1]) > 55:
+                all_texts_string += command[1][:55] + "...\n"
             else:
                 all_texts_string += command[1] + "\n"
         all_commands_string = all_commands_string[:-1]
