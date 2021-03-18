@@ -129,7 +129,28 @@ class Herbot(discord.Client):
                     await message.channel.send(f"Der Command \"{args[0]}\" wurde bearbeitet.")
                 else:
                     await message.channel.send(f"Den Command \"{args[0]}\" gibt es nicht.")
+        elif command == "!help":
+            if len(args) == 0:
+                embed = self.__get_command_list_embed(color)
+                await message.channel.send(embed=embed)
 
+    def __get_command_list_embed(self, color):
+        commands = self.__sql.query("SELECT * FROM commands", ())
+        embed = discord.Embed(title="Liste mit allen Text Commands", color=color)
+        all_commands_string = ""
+        all_texts_string = ""
+        for command in commands:
+            all_commands_string += command[0] + "\n"
+            if len(command[1]) > 60:
+                all_texts_string += command[1][:60] + "...\n"
+            else:
+                all_texts_string += command[1] + "\n"
+        all_commands_string = all_commands_string[:-1]
+        all_texts_string = all_texts_string[:-1]
+        embed.add_field(name="Command", value=all_commands_string)
+        embed.add_field(name="Text", value=all_texts_string)
+        return embed
+                
     def __get_stats_embed(self, display_name, color):
         embed = discord.Embed(title=f"{display_name} Stats", color=color)
         embed.add_field(name="Typ", value="Schwanz\nYarak\nSubschwanz\nInsgesamt")
