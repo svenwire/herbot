@@ -4,6 +4,7 @@ import os
 from random import randint
 import shlex
 from .sql import SQL
+import math
 
 class Herbot(discord.Client):
     
@@ -131,15 +132,27 @@ class Herbot(discord.Client):
                     await message.channel.send(f"Den Command \"{args[0]}\" gibt es nicht.")
         elif command == "!help":
             if len(args) == 0:
-                embed = self.__get_command_list_embed(color)
+                embed = self.__get_command_list_embed(color, 1)
                 await message.channel.send(embed=embed)
+            if len(args) == 1:
+                if args[0].isnumeric():
+                    embed = self.__get_command_list_embed(color, int(args[0]))
+                    await message.channel.send(embed=embed)
 
-    def __get_command_list_embed(self, color):
+    def __get_command_list_embed(self, color, page):
         commands = self.__sql.query("SELECT * FROM commands", ())
-        embed = discord.Embed(title="Liste mit allen Text Commands", color=color)
+        num_pages = math.ceil(len(commands) / 10)
+        if (page > num_pages):
+            return self.__get_command_list_embed(color, num_pages)
+        embed = discord.Embed(title=f"Liste mit allen Text Commands (Seite {page}/{num_pages})", color=color)
         all_commands_string = ""
         all_texts_string = ""
-        for command in commands:
+        start = 10 * (page - 1)
+        end = 10 * page
+        if len(commands) < end:
+            end = len(commands)
+        for i in range(start, end):
+            command = commands[i]
             all_commands_string += command[0] + "\n"
             if len(command[1]) > 60:
                 all_texts_string += command[1][:60] + "...\n"
@@ -149,6 +162,7 @@ class Herbot(discord.Client):
         all_texts_string = all_texts_string[:-1]
         embed.add_field(name="Command", value=all_commands_string)
         embed.add_field(name="Text", value=all_texts_string)
+        
         return embed
                 
     def __get_stats_embed(self, display_name, color):
