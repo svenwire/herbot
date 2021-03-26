@@ -221,7 +221,7 @@ class Herbot(discord.Client):
         bl_kleinster = self.__sql.get_ordered_kleinster()
         rank_kleinster = None
         for i in range(len(bl_kleinster)):
-            if bl[i][0] == display_name:
+            if bl_kleinster[i][0] == display_name:
                 rank_kleinster = i+1
                 
         kleinster_schwanz = self.__sql.get_value_where("kleinster_schwanz", "users", ("display_name", display_name))
