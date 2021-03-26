@@ -11,6 +11,8 @@ class Herbot(discord.Client):
     def __init__(self):
         super().__init__(intents=discord.Intents.all())
         self.__sql = SQL(os.getenv("MYSQL_HOST"), os.getenv("MYSQL_USER"), os.getenv("MYSQL_PASSWORD"), os.getenv("MYSQL_DATABASE"))
+        self.enabled_members = [(408639338910449664, 505060092811411493)]
+        self.ignored_voice_channels = [408730091682791425]
         
     async def on_ready(self):
         self.count_time.start()
@@ -82,17 +84,25 @@ class Herbot(discord.Client):
                     await message.channel.send(f"{display_name} hatte heute einen {laenge}cm Subschwanz.")
         elif command == "!stats":
             if len(args) == 0:
-                embed = self.__get_stats_embed(display_name, color)
+                embed = self.__get_stats_embed(message.author, color)
                 await message.channel.send(embed=embed)
             elif len(args) == 1:
                 if self.__sql.user_exists(args[0]):
-                    embed = self.__get_stats_embed(args[0], color)
-                    await message.channel.send(embed=embed)
+                    for user in message.channel.members:
+                        if user.display_name.lower() == args[0].lower():
+                            embed = self.__get_stats_embed(user, color)
+                            await message.channel.send(embed=embed)
                 else:
                     await message.channel.send(f"Es gibt den User \"{args[0]}\" nicht.")
         elif command == "!187":
             count = self.__sql.get_value_where("187_count", "users", ("display_name", display_name))
             await message.channel.send(f"{display_name} hat {count} mal 187 gehabt. :one: :eight: :seven:")
+        elif command == "!69":
+            count = self.__sql.get_value_where("69_count", "users", ("display_name", display_name))
+            await message.channel.send(f"{display_name} hat {count} mal 69 gehabt. nice. :joy:")
+        elif command == "!88":
+            count = self.__sql.get_value_where("88_count", "users", ("display_name", display_name))
+            await message.channel.send(f"{display_name} hat {count} mal 88 gehabt. :sunglasses:")
         elif command == "!bestenliste":
             if len(args) == 0:
                 ranks = ""
@@ -165,9 +175,11 @@ class Herbot(discord.Client):
         
         return embed
                 
-    def __get_stats_embed(self, display_name, color):
+    def __get_stats_embed(self, user, color):
+        display_name = user.display_name
         embed = discord.Embed(title=f"{display_name} Stats", color=color)
-        embed.add_field(name="Typ", value="Schwanz\nYarak\nSubschwanz\nInsgesamt")
+        embed.set_thumbnail(url=user.avatar_url_as(size=128))
+        embed.add_field(name="Typ", value="Schwanz\nYarak\nSubschwanz\nInsgesamt", inline=True)
         schwaenze = [
             self.__sql.get_schwanz_laenge(display_name, "schwanz"),
             self.__sql.get_schwanz_laenge(display_name, "yarak"),
@@ -186,22 +198,33 @@ class Herbot(discord.Client):
                 highscore = bl[i][1]
                 rank = i+1
         highscore = self.__sql.get_value_where("highscore", "users", ("display_name", display_name))
+        kleinster_schwanz = self.__sql.get_value_where("kleinster_schwanz", "users", ("display_name", display_name))
         if highscore is None: highscore = "- "
         if rank is None: rank = "-"
+        if kleinster_schwanz is None: kleinster_schwanz = "- "
         
-        embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm".replace("None", "- "))
-        embed.add_field(name="Highscore", value=f"{highscore}cm (#{rank})", inline=False)
-        
+        embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm".replace("None", "- "), inline=True)
+        embed.add_field(name="\u200B", value="\u200B", inline=True)
+        embed.add_field(name="Highscore", value=f"{highscore}cm (#{rank})", inline=True)
+        embed.add_field(name="Kleinster", value=f"{kleinster_schwanz}cm")
+        embed.add_field(name="\u200B", value="\u200B", inline=True)
         online_time_minutes = self.__sql.get_online_time(display_name)
         online_time = "{:.2f}".format(online_time_minutes / 60)
         embed.add_field(name="Online Zeit (Voice)", value=f"{online_time} Stunden", inline=False)
+
+        streaming_time_minutes = self.__sql.get_streaming_time(display_name)
+        streaming_time = "{:.2f}".format(streaming_time_minutes / 60)
+        embed.add_field(name="Gestreamte Zeit", value=f"{streaming_time} Stunden")
         return embed
 
     @tasks.loop(seconds=60)
     async def count_time(self):
-        for member in self.get_guild(408639338910449664).get_channel(505060092811411493).members:
-            if member.voice and member.voice.channel.id != 408730091682791425:
+        for i in range(len(self.enabled_members)):
+            for member in self.get_guild(self.enabled_members[i][0]).get_channel(self.enabled_members[i][1]).members:
+                if member.voice and member.voice.channel.id in self.ignored_voice_channels: continue
                 if not self.__sql.is_connected():
                     self.__sql.reconnect()
-                self.__sql.add_online_time(member.display_name, 1)
+                    self.__sql.add_online_time(member.display_name, 1)
+                    if member.self_stream:
+                        self.__sql.add_streaming_time(member.display_name, 1)
         

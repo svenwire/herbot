@@ -10,7 +10,7 @@ class SQL():
 
     def __create_tables(self):
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS commands (command VARCHAR(32) PRIMARY KEY, text VARCHAR(1024))")
-        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (display_name VARCHAR(64) PRIMARY KEY, schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0, 187_count INT DEFAULT 0 NOT NULL)")
+        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (display_name VARCHAR(64) PRIMARY KEY, schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0, 187_count INT DEFAULT 0 NOT NULL, streaming_time INT DEFAULT 0, 88_count INT DEFAULT 0, 69_count INT DEFAULT 0, kleinster_schwanz INT DEFAULT NULL)")
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS settings (name VARCHAR(32) PRIMARY KEY, val VARCHAR(512))")
 
     def reconnect(self):
@@ -63,14 +63,22 @@ class SQL():
         else: return False
 
     def process_highscore(self, display_name):
-        result = self.query("SELECT schwanz, yarak, subschwanz, highscore FROM users WHERE display_name = %s", (display_name,))
+        result = self.query("SELECT schwanz, yarak, subschwanz, highscore, kleinster_schwanz FROM users WHERE display_name = %s", (display_name,))
         highscore = result[0][3]
+        kleinster_schwanz = result[0][4]
         if None not in result[0][0:3]:
+            print(result[0][0:3])
             schwanz_summe = sum(result[0][0:3])
             if highscore is None or highscore < schwanz_summe:
                 self.execute("UPDATE users SET highscore = %s WHERE display_name = %s", (schwanz_summe, display_name))
             if schwanz_summe == 187:
                 self.execute("UPDATE users SET 187_count = 187_count + %s WHERE display_name = %s", (1, display_name))
+            if schwanz_summe == 69:
+                self.execute("UPDATE users SET 69_count = 69_count + %s WHERE display_name = %s", (1, display_name))
+            if schwanz_summe == 88:
+                self.execute("UPDATE users SET 88_count = 88_count + %s WHERE display_name = %s", (1, display_name))
+            if kleinster_schwanz is None or schwanz_summe < kleinster_schwanz:
+                self.execute("UPDATE users SET kleinster_schwanz = %s WHERE display_name = %s", (schwanz_summe, display_name))
 
     def add_user(self, display_name):
         self.execute("INSERT INTO users (display_name) VALUES (%s)", (display_name,))
@@ -93,5 +101,11 @@ class SQL():
     def get_online_time(self, display_name):
         return self.get_value_where("online_time", "users", ("display_name", display_name))
 
+    def get_streaming_time(self, display_name):
+        return self.get_value_where("streaming_time", "users", ("display_name", display_name))
+
     def add_online_time(self, display_name, minutes):
         self.execute("UPDATE users SET online_time = online_time + %s WHERE display_name = %s", (minutes, display_name))
+
+    def add_streaming_time(self, display_name, minutes):
+        self.execute("UPDATE users SET streaming_time = streaming_time + %s WHERE display_name = %s", (minutes, display_name))
