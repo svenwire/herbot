@@ -51,6 +51,9 @@ class SQL():
     def get_ordered_highscores(self):
         return self.query("SELECT display_name, highscore from users WHERE highscore IS NOT NULL ORDER BY highscore DESC", ())
 
+    def get_ordered_kleinster(self):
+        return self.query("SELECT display_name, kleinster_schwanz from users WHERE kleinster_schwanz IS NOT NULL ORDER BY kleinster_schwanz ASC", ())
+
     def get_value_where(self, column, table, where):
         return self.query("SELECT {} FROM {} WHERE {} = %s".format(column, table, where[0]), (where[1],))[0][0]
 

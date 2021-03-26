@@ -113,12 +113,32 @@ class Herbot(discord.Client):
                     ranks += f"#{i+1}\n"
                     users += f"{bl[i][0]}\n"
                     laengen += f"{bl[i][1]}cm\n"
-                
+
+                if not bl: await message.channel.send("Es gibt noch keine Einträge.")
                 embed = discord.Embed(title=f"Bestenliste (Top 10)", color=color)
                 embed.add_field(name="Rank", value=ranks)
                 embed.add_field(name="User", value=users)
                 embed.add_field(name="Länge", value=laengen)
                 await message.channel.send(embed=embed)
+            if len(args) == 1:
+                if args[0].lower() == "kleinster":
+                    ranks = ""
+                    users = ""
+                    laengen = ""
+                    bl = self.__sql.get_ordered_kleinster()[:10]
+                    for i in range(len(bl)):
+                        ranks += f"#{i+1}\n"
+                        users += f"{bl[i][0]}\n"
+                        laengen += f"{bl[i][1]}cm\n"
+
+                    if not bl:
+                        await message.channel.send("Es gibt noch keine Einträge.")
+                        return
+                    embed = discord.Embed(title=f"Kleinster (Top 10)", color=color)
+                    embed.add_field(name="Rank", value=ranks)
+                    embed.add_field(name="User", value=users)
+                    embed.add_field(name="Länge", value=laengen)
+                    await message.channel.send(embed=embed)
         elif command == "!addcom":
             if len(args) == 2:
                 if not self.__sql.text_command_exists(args[0]):
@@ -191,22 +211,29 @@ class Herbot(discord.Client):
                 insgesamt += schwaenze[n]
 
         bl = self.__sql.get_ordered_highscores()
-        highscore = None
         rank = None
         for i in range(len(bl)):
             if bl[i][0] == display_name:
-                highscore = bl[i][1]
                 rank = i+1
+                
         highscore = self.__sql.get_value_where("highscore", "users", ("display_name", display_name))
+
+        bl_kleinster = self.__sql.get_ordered_kleinster()
+        rank_kleinster = None
+        for i in range(len(bl_kleinster)):
+            if bl[i][0] == display_name:
+                rank_kleinster = i+1
+                
         kleinster_schwanz = self.__sql.get_value_where("kleinster_schwanz", "users", ("display_name", display_name))
         if highscore is None: highscore = "- "
         if rank is None: rank = "-"
+        if rank_kleinster is None: rank_kleinster = "-"
         if kleinster_schwanz is None: kleinster_schwanz = "- "
         
         embed.add_field(name="Länge", value=f"{schwaenze[0]}cm\n{schwaenze[1]}cm\n{schwaenze[2]}cm\n{insgesamt}cm".replace("None", "- "), inline=True)
         embed.add_field(name="\u200B", value="\u200B", inline=True)
         embed.add_field(name="Highscore", value=f"{highscore}cm (#{rank})", inline=True)
-        embed.add_field(name="Kleinster", value=f"{kleinster_schwanz}cm")
+        embed.add_field(name="Kleinster", value=f"{kleinster_schwanz}cm (#{rank_kleinster})")
         embed.add_field(name="\u200B", value="\u200B", inline=True)
         online_time_minutes = self.__sql.get_online_time(display_name)
         online_time = "{:.2f}".format(online_time_minutes / 60)
