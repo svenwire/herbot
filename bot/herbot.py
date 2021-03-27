@@ -248,10 +248,10 @@ class Herbot(discord.Client):
     async def count_time(self):
         for i in range(len(self.enabled_members)):
             for member in self.get_guild(self.enabled_members[i][0]).get_channel(self.enabled_members[i][1]).members:
-                if member.voice and member.voice.channel.id in self.ignored_voice_channels: continue
-                if not self.__sql.is_connected():
-                    self.__sql.reconnect()
+                if member.voice:
+                    if member.voice.channel.id in self.ignored_voice_channels: continue
+                    if not self.__sql.is_connected(): self.__sql.reconnect()
                     self.__sql.add_online_time(member.display_name, 1)
-                    if member.self_stream:
+                    if member.voice.self_stream:
                         self.__sql.add_streaming_time(member.display_name, 1)
         
