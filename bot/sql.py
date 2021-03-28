@@ -10,7 +10,7 @@ class SQL():
 
     def __create_tables(self):
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS commands (command VARCHAR(32) PRIMARY KEY, text VARCHAR(1024))")
-        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (display_name VARCHAR(64) PRIMARY KEY, schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0, 187_count INT DEFAULT 0 NOT NULL, streaming_time INT DEFAULT 0, 88_count INT DEFAULT 0, 69_count INT DEFAULT 0, kleinster_schwanz INT DEFAULT NULL)")
+        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (display_name VARCHAR(64) PRIMARY KEY, schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0, 187_count INT DEFAULT 0 NOT NULL, streaming_time INT DEFAULT 0, 88_count INT DEFAULT 0, 69_count INT DEFAULT 0, kleinster_schwanz INT DEFAULT NULL, 1337_count int DEFAULT 0, 1337_today BIT(1) DEFAULT 0)")
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS settings (name VARCHAR(32) PRIMARY KEY, val VARCHAR(512))")
 
     def reconnect(self):
@@ -40,6 +40,7 @@ class SQL():
             if datetime.today().date() > next_date:
                 self.execute("UPDATE users SET schwanz = %s, yarak = %s, subschwanz = %s", (None, None, None))
                 self.execute("UPDATE settings SET val = %s WHERE name = %s", (datetime.today().date(), 'next_date'))
+                self.execute("UPDATE users SET 1337_today = %s", (0,))
         else:
             self.execute("INSERT INTO settings (name, val) VALUES (%s, %s)", ('next_date', datetime.today().date()))
  
@@ -112,3 +113,7 @@ class SQL():
 
     def add_streaming_time(self, display_name, minutes):
         self.execute("UPDATE users SET streaming_time = streaming_time + %s WHERE display_name = %s", (minutes, display_name))
+
+    def add_1337_count(self, display_name, count):
+        self.execute("UPDATE users SET 1337_count = 1337_count + %s WHERE display_name = %s", (count, display_name))
+        self.update_value_where("users", "1337_today", 1, ("display_name", display_name))

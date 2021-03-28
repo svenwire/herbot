@@ -5,6 +5,7 @@ from random import randint
 import shlex
 from .sql import SQL
 import math
+from datetime import datetime
 
 class Herbot(discord.Client):
     
@@ -103,6 +104,18 @@ class Herbot(discord.Client):
         elif command == "!88":
             count = self.__sql.get_value_where("88_count", "users", ("display_name", display_name))
             await message.channel.send(f"{display_name} hat {count} mal 88 gehabt. :sunglasses:")
+        elif command == "!1337":
+            count = self.__sql.get_value_where("1337_count", "users", ("display_name", display_name))
+            time = datetime.now().time()
+            if time.hour == 13 and time.minute == 37:
+                already_did_today = self.__sql.get_value_where("1337_today", "users", ("display_name", display_name))
+                if not already_did_today:
+                    await message.channel.send(f"Juhu, es ist 13:37 Uhr! Du warst jetzt {count + 1} mal um 13:37 Uhr da.")
+                    self.__sql.add_1337_count(display_name, 1)
+                    return
+            await message.channel.send(f"Du warst {count} mal um 13:37 Uhr da.")
+            
+                
         elif command == "!bestenliste":
             if len(args) == 0:
                 ranks = ""
