@@ -174,11 +174,11 @@ class Herbot(discord.Client):
                     await message.channel.send(f"Den Command \"{args[0]}\" gibt es nicht.")
         elif command == "!help":
             if len(args) == 0:
-                embed = self.get_command_list_embed(color, 1)
+                embed = self.get_command_list_embed(self.embed_color, 1)
                 await message.channel.send(embed=embed)
             if len(args) == 1:
                 if args[0].isnumeric():
-                    embed = self.get_command_list_embed(color, int(args[0]))
+                    embed = self.get_command_list_embed(self.embed_color, int(args[0]))
                     await message.channel.send(embed=embed)
 
     def get_command_list_embed(self, color, page):
