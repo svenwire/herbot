@@ -70,7 +70,7 @@ class Herbot(discord.Client):
                     self.sql.update_schwanz_laenge(user, "yarak", laenge)
                     self.sql.process_highscore(user)
                 else:
-                    laenge = self.__sql.get_schwanz_laenge(user, "yarak")
+                    laenge = self.sql.get_schwanz_laenge(user, "yarak")
                     await message.channel.send(f"{user.display_name} hatte heute einen {laenge}cm Yarak.")
         elif command == "!subschwanz":
             if len(args) == 0:
