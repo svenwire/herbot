@@ -10,7 +10,7 @@ class SQL():
 
     def __create_tables(self):
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS commands (command VARCHAR(32) PRIMARY KEY, text VARCHAR(1024))")
-        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (id BIGINT(18) PRIMARY KEY, display_name VARCHAR(64), schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0, 187_count INT DEFAULT 0 NOT NULL, streaming_time INT DEFAULT 0, 88_count INT DEFAULT 0, 69_count INT DEFAULT 0, kleinster_schwanz INT DEFAULT NULL, 1337_count int DEFAULT 0, 1337_today BIT(1) DEFAULT 0)")
+        self.__cursor.execute("CREATE TABLE IF NOT EXISTS users (id BIGINT(18) PRIMARY KEY, display_name VARCHAR(64), schwanz TINYINT(3) UNSIGNED DEFAULT NULL, yarak TINYINT(3) UNSIGNED DEFAULT NULL, subschwanz TINYINT(3) UNSIGNED DEFAULT NULL, highscore SMALLINT(3) UNSIGNED DEFAULT NULL, online_time INT DEFAULT 0, 187_count INT DEFAULT 0 NOT NULL, streaming_time INT DEFAULT 0, 88_count INT DEFAULT 0, 69_count INT DEFAULT 0, kleinster_schwanz INT DEFAULT NULL, 1337_count int DEFAULT 0, 1337_today BIT(1) DEFAULT 0, 420_count int DEFAULT 0, 420_today BIT(1) DEFAULT 0)")
         self.__cursor.execute("CREATE TABLE IF NOT EXISTS settings (name VARCHAR(32) PRIMARY KEY, val VARCHAR(512))")
 
     def reconnect(self):
@@ -41,6 +41,7 @@ class SQL():
                 self.execute("UPDATE users SET schwanz = %s, yarak = %s, subschwanz = %s", (None, None, None))
                 self.execute("UPDATE settings SET val = %s WHERE name = %s", (datetime.today().date(), 'next_date'))
                 self.execute("UPDATE users SET 1337_today = %s", (0,))
+                self.execute("UPDATE users SET 420_today = %s", (0,))
         else:
             self.execute("INSERT INTO settings (name, val) VALUES (%s, %s)", ('next_date', datetime.today().date()))
  
@@ -125,3 +126,7 @@ class SQL():
     def add_1337_count(self, user, count):
         self.execute("UPDATE users SET 1337_count = 1337_count + %s WHERE id = %s", (count, user.id))
         self.update_value_where("users", "1337_today", 1, ("id", user.id))
+
+    def add_420_count(self, user, count):
+        self.execute("UPDATE users SET 420_count = 420_count + %s WHERE id = %s", (count, user.id))
+        self.update_value_where("users", "420_today", 1, ("id", user.id))

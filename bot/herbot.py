@@ -113,8 +113,16 @@ class Herbot(discord.Client):
                     self.sql.add_1337_count(user, 1)
                     return
             await message.channel.send(f"{user.display_name} war {count} mal um 13:37 Uhr da.")
-            
-                
+        elif command == "!420":
+            count = self.sql.get_value_where("420_count", "users", ("id", user.id))
+            time = datetime.now().time()
+            if time.hour == 4 and time.minute == 20:
+                already_did_today = self.sql.get_value_where("420_today", "users", ("id", user.id))
+                if not already_did_today:
+                    await message.channel.send(f"Juhu, es ist 4:20 Uhr! {user.display_name} war jetzt {count + 1} mal um 4:20 Uhr da.")
+                    self.sql.add_420_count(user, 1)
+                    return
+            await message.channel.send(f"{user.display_name} war {count} mal um 4:20 Uhr da.")
         elif command == "!bestenliste":
             if len(args) == 0:
                 ranks = ""
